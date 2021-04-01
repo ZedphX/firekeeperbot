@@ -1,5 +1,9 @@
 # Fire Keeper Bot
 
+Fire Keeper is a Telegram bot made with PHP in Laravel using the [telebot](https://github.com/westacks/telebot) library. It can set reminders for whatever the user wants to remember.
+
+This bot imitates the Fire Keeper of the Dark Souls saga, more concretely the Dark Souls 3 one.
+
 ## Database Setting
 
 ```

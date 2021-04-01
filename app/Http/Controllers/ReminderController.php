@@ -61,6 +61,21 @@ class ReminderController extends Controller
     }
 
     /**
+     * Set a Reminder.
+     * Returns an array with the status (success/error) and a response to the user.
+     * 
+     * @param int $userTelegramId
+     * @param string $message
+     * @param string $alias
+     * @param string $locale
+     * @return array
+     */
+    public function setReminder(int $userTelegramId, string $message, string $alias = '', string $locale = 'en')
+    {
+        return $this->service->setReminder($userTelegramId, $message, $alias, $locale);
+    }
+
+    /**
      * Send Reminders.
      *
      * @param int $limit

@@ -5,6 +5,7 @@ namespace FireKeeper\Services;
 use FireKeeper\Models\Reminder;
 use Carbon\Carbon;
 use FireKeeper\Jobs\SendReminderProcess;
+use Illuminate\Support\Facades\Config;
 
 class ReminderService
 {
@@ -52,10 +53,54 @@ class ReminderService
      * @param int $id
      * @return Reminder
      */
-    public function get($id)
+    public function get(int $id)
     {
         $reminder = Reminder::find($id);
         return $reminder;
+    }
+
+    /**
+     * Set a Reminder.
+     * Returns an array with the status (success/error) and a response to the user.
+     * 
+     * @param int $userTelegramId
+     * @param string $message
+     * @param string $alias
+     * @param string $locale
+     * @return array
+     */
+    public function setReminder(int $userTelegramId, string $message, string $alias = '', string $locale = 'en')
+    {
+        if (!$alias) $alias = Config::get('constants.default_alias');
+
+        $result = $this->create([
+            'user_telegram_id' => $userTelegramId,
+            'message' => $message,
+        ]);
+
+        if ($result && is_numeric($result)) {
+            $reminder = $this->get($result);
+            $timeLeft = Carbon::now()->locale($locale)->diffForHumans($reminder->remind_date);
+
+            $status = Config::get('constants.statuses.success');
+            $responseMessage = __('bot_messages.reminder_add', [
+                'text_to_remind' => $reminder->text_to_remind,
+                'time_left' => $timeLeft
+            ], $locale);
+        } else {
+            $status = Config::get('constants.statuses.error');
+            $responseMessage = __('bot_messages.error', ['alias' => $alias], $locale);
+        }
+
+        TeleBot::sendMessage([
+            'chat_id' => $userTelegramId,
+            'text' => $result['message']
+        ]);
+
+        return [
+            'status' => $status,
+            'message' => $responseMessage
+        ];
     }
 
     /**
@@ -65,7 +110,7 @@ class ReminderService
      * @param int $limit
      * @return boolean
      */
-    public function sendReminders($limit)
+    public function sendReminders(int $limit)
     {
         $toBeSend = Reminder::whereDate('remind_date', '<=', Carbon::now())->limit($limit)->get();
         foreach ($toBeSend as $reminder) {
@@ -81,7 +126,7 @@ class ReminderService
      * @param string $message
      * @return array
      */
-    private function validateMessage($message)
+    private function validateMessage(string $message)
     {
         //TODO make this a service
 

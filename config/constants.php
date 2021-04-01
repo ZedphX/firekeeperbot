@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'statuses' => [
+        'success' => 'Success',
+        'error' => 'Error',
+    ],
     'aliases' => [
         'hollow',
         'unkindled',
