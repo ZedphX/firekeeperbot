@@ -17,11 +17,9 @@ class UserService
     public function create($data)
     {
         $user = new User;
-        $user->telegram_id = $data['telegram_id'];
-        $user->alias = $data['alias'];
         $user->name = $data['name'];
-        $user->email = !empty($data['email']) ? $data['email'] : null;
-        $user->password = !empty($data['password']) ? $data['password'] : null;
+        $user->email = $data['email'];
+        $user->password = Hash::make($data['password']);
 
         return $user->save() ? $user->id : false;
     }
@@ -38,11 +36,9 @@ class UserService
         $user = User::find($id);
 
         if ($user) {
-            if (!empty($user->telegram_id)) $user->telegram_id = $data['telegram_id'];
-            if (!empty($user->alias)) $user->alias = $data['alias'];
             if (!empty($user->name)) $user->name = $data['name'];
             if (!empty($user->email)) $user->email = $data['email'];
-            if (!empty($user->password)) $user->password = $data['password'];
+            if (!empty($user->password)) $user->password = Hash::make($data['password']);
 
             return $user->save() ? $user->id : false;
         }
@@ -72,18 +68,5 @@ class UserService
     {
         $reminder = User::find($id);
         return $reminder;
-    }
-
-    /**
-     * Get a User from the database by
-     * they telegram id.
-     * 
-     * @param int $id
-     * @return User
-     */
-    public function getByTelgramId($id)
-    {
-        $user = User::where('telegram_id', '=', $id)->first();
-        return $user;
     }
 }

@@ -4,18 +4,18 @@ namespace FireKeeper\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use FireKeeper\Services\UserService;
+use FireKeeper\Services\TelegramUserService;
 
-class UserController extends Controller
+class TelegramUserController extends Controller
 {
     /**
-     * @var UserService
+     * @var TelegramUserService
      */
     protected $service;
 
     public function __construct()
     {
-        $this->service = new UserService;
+        $this->service = new TelegramUserService;
     }
 
     /**
@@ -27,9 +27,9 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $result = $this->service->create([
-            'name' => $request->telegramname_id,
-            'email' => $request->email,
-            'password' => $request->password,
+            'telegram_id' => $request->telegram_id,
+            'alias' => $request->alias,
+            'locale' => $request->locale,
         ]);
 
         return new Response($result);
@@ -45,9 +45,9 @@ class UserController extends Controller
     public function update($id, Request $request)
     {
         $result = $this->service->update($id, [
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => $request->password,
+            'telegram_id' => $request->telegram_id,
+            'alias' => $request->alias,
+            'locale' => $request->locale,
         ]);
 
         return new Response($result);
@@ -74,6 +74,19 @@ class UserController extends Controller
     public function get($id)
     {
         $result = $this->service->get($id);
+        return $result;
+    }
+
+    /**
+     * Get a User from the database by
+     * they telegram id.
+     * 
+     * @param int $id
+     * @return User
+     */
+    public function getByTelgramId($id)
+    {
+        $result = $this->service->getByTelgramId($id);
         return $result;
     }
 }

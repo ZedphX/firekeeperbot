@@ -136,9 +136,10 @@ class ReminderService
          */
 
         $possibleDelimiters = [
-            ' on ', //Real date. Example: on March 22nd
-            ' in ' //Time expression. Example: in 20 minutes
+            ...Config::get('constants.reminder_delimiters.date'),
+            ...Config::get('constants.reminder_delimiters.time')
         ];
+
         $delimitersPos = [];
 
         // Search last position of delimiters
@@ -152,7 +153,8 @@ class ReminderService
             $delimiter = array_key_first($delimitersPos);
 
             $arguments = array_map('strrev', explode(strrev($delimiter), strrev($message), 2));
-            $remindDate = $delimiter == $possibleDelimiters[0] ? strtotime($arguments[0]) : strtotime("+$arguments[0]");
+            $remindDate = in_array($delimiter, Config::get('constants.reminder_delimiters.date')) ?
+                strtotime($arguments[0]) : strtotime("+$arguments[0]");
 
             if ($remindDate) {
                 return [

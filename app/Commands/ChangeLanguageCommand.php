@@ -3,7 +3,7 @@
 namespace FireKeeper\Commands;
 
 use WeStacks\TeleBot\Handlers\CommandHandler;
-use Illuminate\Support\Facades\App;
+use FireKeeper\Http\Controllers\TelegramUserController;
 
 class ChangeLanguageCommand extends CommandHandler
 {
@@ -12,7 +12,7 @@ class ChangeLanguageCommand extends CommandHandler
 
     public function handle()
     {
-        $user = (new UserController)->getByTelgramId($this->update->message->from->id);
+        $user = (new TelegramUserController)->getByTelgramId($this->update->message->from->id);
         $replyOptions = [
             'inline_keyboard' => []
         ];

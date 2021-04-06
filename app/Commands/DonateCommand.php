@@ -3,6 +3,7 @@
 namespace FireKeeper\Commands;
 
 use WeStacks\TeleBot\Handlers\CommandHandler;
+use FireKeeper\Http\Controllers\TelegramUserController;
 
 class DonateCommand extends CommandHandler
 {
@@ -11,7 +12,7 @@ class DonateCommand extends CommandHandler
 
     public function handle()
     {
-        $user = (new UserController)->getByTelgramId($this->update->message->from->id);
+        $user = (new TelegramUserController)->getByTelgramId($this->update->message->from->id);
 
         $this->sendMessage([
             'text' => __('bot_messages.donate', ['donate_url' => env('DONATE_BUYMEACOFFEE')], $user->locale)

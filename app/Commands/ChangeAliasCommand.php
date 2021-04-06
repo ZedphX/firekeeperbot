@@ -2,9 +2,8 @@
 
 namespace FireKeeper\Commands;
 
-use FireKeeper\Http\Controllers\UserController;
 use WeStacks\TeleBot\Handlers\CommandHandler;
-use Illuminate\Support\Facades\App;
+use FireKeeper\Http\Controllers\TelegramUserController;
 use Illuminate\Support\Facades\Config;
 
 class ChangeAliasCommand extends CommandHandler
@@ -14,7 +13,7 @@ class ChangeAliasCommand extends CommandHandler
 
     public function handle()
     {
-        $user = (new UserController)->getByTelgramId($this->update->message->from->id);
+        $user = (new TelegramUserController)->getByTelgramId($this->update->message->from->id);
         $replyOptions = [
             'inline_keyboard' => []
         ];

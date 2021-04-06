@@ -21,5 +21,15 @@ return [
     'callback_query_types' => [
         'language' => 'language:',
         'alias' => 'alias:'
+    ],
+    'reminder_delimiters' => [
+        'date' => [ //Real date. Example: on March 22nd
+            'on',
+            'el'
+        ],
+        'time' => [ //Time expression. Example: in 20 minutes
+            'in',
+            'en'
+        ]
     ]
 ];
