@@ -3,6 +3,7 @@
 namespace FireKeeper\Services;
 
 use FireKeeper\Models\Reminder;
+use WeStacks\TeleBot\Laravel\TeleBot;
 use Carbon\Carbon;
 use FireKeeper\Jobs\SendReminderProcess;
 use Illuminate\Support\Facades\Config;
@@ -83,18 +84,18 @@ class ReminderService
             $timeLeft = Carbon::now()->locale($locale)->diffForHumans($reminder->remind_date);
 
             $status = Config::get('constants.statuses.success');
-            $responseMessage = __('bot_messages.reminder_add', [
+            $responseMessage = __('bot_messages.remind_add', [
                 'text_to_remind' => $reminder->text_to_remind,
                 'time_left' => $timeLeft
             ], $locale);
         } else {
             $status = Config::get('constants.statuses.error');
-            $responseMessage = __('bot_messages.error', ['alias' => $alias], $locale);
+            $responseMessage = __('bot_messages.error', ['alias' => __("bot_messages.$alias", [], $locale)], $locale);
         }
 
         TeleBot::sendMessage([
             'chat_id' => $userTelegramId,
-            'text' => $result['message']
+            'text' => $responseMessage
         ]);
 
         return [
@@ -153,14 +154,21 @@ class ReminderService
             $delimiter = array_key_first($delimitersPos);
 
             $arguments = array_map('strrev', explode(strrev($delimiter), strrev($message), 2));
-            $remindDate = in_array($delimiter, Config::get('constants.reminder_delimiters.date')) ?
-                strtotime($arguments[0]) : strtotime("+$arguments[0]");
+            if (in_array($delimiter, Config::get('constants.reminder_delimiters.date'))) {
+                $remindDate = CarCarbon::createFromTimestamp(strtotime($arguments[0]))->toDateTimeString();;
+            } else {
+                //TODO locale $argumentParts[0] -> days, months, etc
+                $timeAmount = (int) preg_replace('/[^0-9]/', '', $arguments[0]);
+                $timeUnit = preg_replace('/[^a-zA-Z]/', '', $arguments[0]);
 
-            if ($remindDate) {
+                $remindDate = Carbon::now()->add($timeUnit, $timeAmount);
+            }
+
+            if ($remindDate && $remindDate instanceof Carbon) {
                 return [
                     'valid' => true,
                     'text_to_remind' => $arguments[1],
-                    'remind_date' => $remindDate,
+                    'remind_date' => $remindDate->format('Y-m-d H:i:s'),
                 ];
             }
         }

@@ -1,10 +1,13 @@
 <?php
 
-namespace FireKeeper\UpdateHanlders;
+namespace FireKeeper\UpdateHandlers;
 
 use WeStacks\TeleBot\Interfaces\UpdateHandler;
 use WeStacks\TeleBot\Objects\Update;
 use WeStacks\TeleBot\TeleBot;
+use Illuminate\Support\Facades\Config;
+use FireKeeper\Http\Controllers\TelegramUserController;
+use FireKeeper\Http\Controllers\ReminderController;
 
 class InlineQueryHandler extends UpdateHandler
 {
@@ -19,7 +22,7 @@ class InlineQueryHandler extends UpdateHandler
         $inlineCommands = Config::get('constants.inline_commands');
 
         if ($this->isCommand($query->query, $inlineCommands['remind'])) {
-            $user = (new UserController)->getByTelgramId($query->from->id);
+            $user = (new TelegramUserController)->getByTelgramId($query->from->id);
             $updateMessage = $this->removeCommand($query->query, $inlineCommands['remind']);
 
             (new ReminderController)->setReminder($user->telegram_id, $updateMessage, $user->alias, $user->locale);
@@ -32,7 +35,7 @@ class InlineQueryHandler extends UpdateHandler
      */
     private function isCommand(string $query, array $commandAliases): bool
     {
-        return preg_match("/^" . implode("|", $commandAliases['remind']) . "/", $query);
+        return preg_match("/^" . implode("|", $commandAliases) . "/", $query);
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace FireKeeper\Services;
 
 use FireKeeper\Models\TelegramUser;
+use WeStacks\TeleBot\Objects\Update;
 
 class TelegramUserService
 {
@@ -80,6 +81,37 @@ class TelegramUserService
     public function getByTelgramId($id)
     {
         $user = TelegramUser::where('telegram_id', '=', $id)->first();
+        return $user;
+    }
+
+    /**
+     * Get an Update's Telegram User from the database.
+     * If the Telegram User does not exist it is created with the Update information.
+     * 
+     * @param Update $update
+     * @return TelegramUser
+     */
+    public function getUserFromUpdate(Update $update)
+    {
+        if (isset($update->callback_query)) $updateUser = $update->callback_query->from;
+        elseif (isset($update->inline_query)) $updateUser = $update->inline_query->from;
+        else $updateUser = $update->message->from;
+
+        $user = $this->getByTelgramId($updateUser->id);
+        if (!$user) {
+            $defaultAlias = Config::get('constants.default_alias');
+            $languageCode = substr($updateUser->language_code, 0, 2);
+
+            $this->create([
+                'telegram_id' => $updateUser->id,
+                'alias' => $defaultAlias,
+                'locale' => in_array($languageCode, array_keys(Config::get('constants.supported_languages')))
+                    ? $languageCode : 'en',
+            ]);
+
+            $user = $this->getByTelgramId($updateUser->id);
+        }
+
         return $user;
     }
 }

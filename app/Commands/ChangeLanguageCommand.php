@@ -4,6 +4,9 @@ namespace FireKeeper\Commands;
 
 use WeStacks\TeleBot\Handlers\CommandHandler;
 use FireKeeper\Http\Controllers\TelegramUserController;
+use Illuminate\Support\Facades\Config;
+use WeStacks\TeleBot\Objects\InlineKeyboardButton;
+use WeStacks\TeleBot\Objects\Keyboard;
 
 class ChangeLanguageCommand extends CommandHandler
 {
@@ -12,7 +15,7 @@ class ChangeLanguageCommand extends CommandHandler
 
     public function handle()
     {
-        $user = (new TelegramUserController)->getByTelgramId($this->update->message->from->id);
+        $user = (new TelegramUserController)->getUserFromUpdate($this->update);
         $replyOptions = [
             'inline_keyboard' => []
         ];
@@ -20,14 +23,16 @@ class ChangeLanguageCommand extends CommandHandler
         $supportedLanguages = Config::get('constants.supported_languages');
         foreach ($supportedLanguages as $code => $language) {
             $replyOptions['inline_keyboard'][] = [
-                'text' => $language,
-                'callback_data' => "language:$code",
+                new InlineKeyboardButton([
+                    'text' => $language,
+                    'callback_data' => "language:$code",
+                ])
             ];
         }
 
         $this->sendMessage([
             'text' => __('bot_messages.change_language', [], $user->locale),
-            'reply_markup' => json_encode($replyOptions)
+            'reply_markup' => Keyboard::create($replyOptions)
         ]);
     }
 }

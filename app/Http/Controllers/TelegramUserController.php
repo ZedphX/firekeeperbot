@@ -5,6 +5,7 @@ namespace FireKeeper\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use FireKeeper\Services\TelegramUserService;
+use WeStacks\TeleBot\Objects\Update;
 
 class TelegramUserController extends Controller
 {
@@ -87,6 +88,18 @@ class TelegramUserController extends Controller
     public function getByTelgramId($id)
     {
         $result = $this->service->getByTelgramId($id);
+        return $result;
+    }
+
+    /**
+     * Get an Update's Telegram User from database.
+     * 
+     * @param Update $update
+     * @return TelegramUser
+     */
+    public function getUserFromUpdate(Update $update)
+    {
+        $result = $this->service->getUserFromUpdate($update);
         return $result;
     }
 }

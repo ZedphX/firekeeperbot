@@ -4,7 +4,7 @@ namespace FireKeeper\Commands;
 
 use WeStacks\TeleBot\Handlers\CommandHandler;
 
-class DonateCommand extends CommandHandler
+class DiceCommand extends CommandHandler
 {
     protected static $aliases = ['/dice', '/dado'];
     protected static $description = 'Throw a dice and shows the result.';

@@ -13,8 +13,8 @@ class RemindMeCommand extends CommandHandler
 
     public function handle()
     {
-        $user = (new TelegramUserController)->getByTelgramId($this->update->message->from->id);
-        $updateMessage = preg_replace("/^" . implode("|", $this->aliases) . "/", '', $this->update->message, 1);
+        $user = (new TelegramUserController)->getUserFromUpdate($this->update);
+        $updateMessage = preg_replace("/^" . implode("|", preg_filter('/^/', "\\", RemindMeCommand::$aliases)) . "/", '', $this->update->message->text, 1);
 
         $result = (new ReminderController)->setReminder($user->telegram_id, $updateMessage, $user->alias, $user->locale);
     }

@@ -5,6 +5,8 @@ namespace FireKeeper\Commands;
 use WeStacks\TeleBot\Handlers\CommandHandler;
 use FireKeeper\Http\Controllers\TelegramUserController;
 use Illuminate\Support\Facades\Config;
+use WeStacks\TeleBot\Objects\InlineKeyboardButton;
+use WeStacks\TeleBot\Objects\Keyboard;
 
 class ChangeAliasCommand extends CommandHandler
 {
@@ -13,7 +15,7 @@ class ChangeAliasCommand extends CommandHandler
 
     public function handle()
     {
-        $user = (new TelegramUserController)->getByTelgramId($this->update->message->from->id);
+        $user = (new TelegramUserController)->getUserFromUpdate($this->update);
         $replyOptions = [
             'inline_keyboard' => []
         ];
@@ -21,14 +23,20 @@ class ChangeAliasCommand extends CommandHandler
         $userAliases = Config::get('constants.aliases');
         foreach ($userAliases as $alias) {
             $replyOptions['inline_keyboard'][] = [
-                'text' => __("bot_messages.$alias", [], $user->locale),
-                'callback_data' => "alias:$alias",
+                new InlineKeyboardButton([
+                    'text' => __("bot_messages.$alias", [], $user->locale),
+                    'callback_data' => "alias:$alias",
+                ])
             ];
         }
 
         $this->sendMessage([
-            'text' => __('bot_messages.change_alias', [], $user->locale),
-            'reply_markup' => json_encode($replyOptions)
+            'text' => __(
+                'bot_messages.change_alias',
+                ['alias' => __("bot_messages.$user->alias", [], $user->locale)],
+                $user->locale
+            ),
+            'reply_markup' => Keyboard::create($replyOptions)
         ]);
     }
 }

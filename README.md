@@ -10,6 +10,12 @@ This bot imitates the Fire Keeper of the Dark Souls saga, more concretely the Da
 php artisan migrate
 ```
 
+## Cron Setting
+
+```
+* * * * * cd /path-to-project && php artisan schedule:run >> /dev/null 2>&1
+```
+
 ## Commands
 
 ### Register commands

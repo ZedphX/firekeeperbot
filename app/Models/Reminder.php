@@ -20,7 +20,7 @@ class Reminder extends Model
 
     public $timestamps = true;
 
-    protected $dateFormat = 'U';
+    protected $dateFormat = 'Y-m-d H:i:s';
 
     /**
      * The attributes that should be cast to native types.

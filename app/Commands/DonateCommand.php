@@ -12,7 +12,7 @@ class DonateCommand extends CommandHandler
 
     public function handle()
     {
-        $user = (new TelegramUserController)->getByTelgramId($this->update->message->from->id);
+        $user = (new TelegramUserController)->getUserFromUpdate($this->update);
 
         $this->sendMessage([
             'text' => __('bot_messages.donate', ['donate_url' => env('DONATE_BUYMEACOFFEE')], $user->locale)
