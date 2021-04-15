@@ -25,7 +25,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->call(new Actions\SendReminders)->everyThreeMinutes();
+        $schedule->call(new Actions\CleanSendRemindersLog)->dailyAt('00:00:00');
+        $schedule->call(new Actions\SendReminders)->everyMinute();
     }
 
     /**

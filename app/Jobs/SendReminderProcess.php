@@ -3,12 +3,13 @@
 namespace FireKeeper\Jobs;
 
 use FireKeeper\Models\Reminder;
-use FireKeeper\Services\UserService;
+use FireKeeper\Http\Controllers\TelegramUserController;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use WeStacks\TeleBot\Laravel\TeleBot;
 
 class SendReminderProcess implements ShouldQueue
 {
@@ -39,10 +40,16 @@ class SendReminderProcess implements ShouldQueue
      */
     public function handle()
     {
-        $reminder_user = (new UserService)->getByTelgramId($this->reminder->user_telegram_id);
+        $reminderUser = (new TelegramUserController)->getByTelgramId($this->reminder->user_telegram_id);
 
-        $message = str_replace(':alias', $reminder_user->alias, __('bot_messages.remind_send'));
-        $message = str_replace(':text_to_remind', $this->reminder->text_to_remind, $message);
+        $message = __(
+            'bot_messages.remind_send',
+            [
+                'alias' => __("bot_messages.$reminderUser->alias", [], $reminderUser->locale),
+                'text_to_remind' => $this->reminder->text_to_remind,
+            ],
+            $reminderUser->locale
+        );
 
         $result = TeleBot::async()->sendMessage([
             'chat_id' => $this->reminder->user_telegram_id,
