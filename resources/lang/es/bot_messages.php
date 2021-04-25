@@ -21,6 +21,6 @@ return [
     'change_language' => "A cambiado tu lenguaje?\nMuy bien.\nCuido de la llama, y cuido de ti.\nSi tu voz habla un lenguaje diferente,la mia asi lo hará.",
     'change_alias' => "Quieres cambiar como me refiero a ti, :alias?\nComo deseas que te llame?",
     'remind' => "Muy bien.\nDi aquello que deseas atesorar.\nYo te haré acuerdo de ello.",
-    'remind_add' => "Muy bien.\nEntonces toca la oscuridad en mi interior.\nNútrete de estas almas sin rey.\nTe recordare sobre\n\":text_to_remind\".\nen :time_left.",
+    'remind_add' => "Muy bien.\nEntonces toca la oscuridad en mi interior.\nNútrete de estas almas sin rey.\nTe recordare sobre\n\":text_to_remind\".\n:time_left.",
     'remind_send' => ":alias.\nTu me solicitaste que te recordara \n\":text_to_remind\"",
 ];
