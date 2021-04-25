@@ -5,8 +5,10 @@ namespace FireKeeper\Services;
 use FireKeeper\Models\Reminder;
 use WeStacks\TeleBot\Laravel\TeleBot;
 use Carbon\Carbon;
+use Exception;
 use FireKeeper\Jobs\SendReminderProcess;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Crypt;
 
 class ReminderService
 {
@@ -23,11 +25,11 @@ class ReminderService
         $reminder = new Reminder;
         $reminder->user_telegram_id = $data['user_telegram_id'];
         //$reminder->chat_id = $data['chat_id'];
-        $reminder->message = $data['message'];
+        $reminder->message = Crypt::encryptString($data['message']);
 
-        $validateData = $this->validateMessage($reminder->message);
+        $validateData = $this->validateMessage($data['message'], $data['locale']);
         if ($validateData && $validateData['valid']) {
-            $reminder->text_to_remind = $validateData['text_to_remind'];
+            $reminder->text_to_remind = Crypt::encryptString($validateData['text_to_remind']);
             $reminder->remind_date = $validateData['remind_date'];
 
             return $reminder->save() ? $reminder->id : false;
@@ -77,15 +79,16 @@ class ReminderService
         $result = $this->create([
             'user_telegram_id' => $userTelegramId,
             'message' => $message,
+            'locale' => $locale
         ]);
 
         if ($result && is_numeric($result)) {
             $reminder = $this->get($result);
-            $timeLeft = Carbon::now()->locale($locale)->diffForHumans($reminder->remind_date);
+            $timeLeft = $reminder->remind_date->locale($locale)->diffForHumans(null, null, false, 3);
 
             $status = Config::get('constants.statuses.success');
             $responseMessage = __('bot_messages.remind_add', [
-                'text_to_remind' => $reminder->text_to_remind,
+                'text_to_remind' => Crypt::decryptString($reminder->text_to_remind),
                 'time_left' => $timeLeft
             ], $locale);
         } else {
@@ -124,12 +127,10 @@ class ReminderService
      * If it is correct, returns valid, text to remind and remind date,
      * else returns valid = false.
      * 
-     * @param string $message
      * @return array
      */
-    private function validateMessage(string $message)
+    private function validateMessage(string $message, string $locale)
     {
-        //TODO make this a service
 
         /**
          * Expected format: text_to_remind on/in date/time_expression
@@ -143,34 +144,40 @@ class ReminderService
 
         $delimitersPos = [];
 
-        // Search last position of delimiters
-        for ($i = 0; $i < count($possibleDelimiters); $i++) {
-            $lastPos = strrpos($message, $possibleDelimiters[$i]);
-            if ($lastPos) $delimitersPos[$possibleDelimiters[$i]] = $lastPos;
-        }
+        try {
 
-        if ($delimitersPos) {
-            arsort($delimitersPos);
-            $delimiter = array_key_first($delimitersPos);
-
-            $arguments = array_map('strrev', explode(strrev($delimiter), strrev($message), 2));
-            if (in_array($delimiter, Config::get('constants.reminder_delimiters.date'))) {
-                $remindDate = CarCarbon::createFromTimestamp(strtotime($arguments[0]))->toDateTimeString();;
-            } else {
-                //TODO locale $argumentParts[0] -> days, months, etc
-                $timeAmount = (int) preg_replace('/[^0-9]/', '', $arguments[0]);
-                $timeUnit = preg_replace('/[^a-zA-Z]/', '', $arguments[0]);
-
-                $remindDate = Carbon::now()->add($timeUnit, $timeAmount);
+            // Search last position of delimiters
+            for ($i = 0; $i < count($possibleDelimiters); $i++) {
+                $lastPos = strrpos($message, $possibleDelimiters[$i]);
+                if ($lastPos) $delimitersPos[$possibleDelimiters[$i]] = $lastPos;
             }
 
-            if ($remindDate && $remindDate instanceof Carbon) {
-                return [
-                    'valid' => true,
-                    'text_to_remind' => $arguments[1],
-                    'remind_date' => $remindDate->format('Y-m-d H:i:s'),
-                ];
+            if ($delimitersPos) {
+                arsort($delimitersPos);
+                $delimiter = array_key_first($delimitersPos);
+
+                $arguments = array_map('strrev', explode(strrev($delimiter), strrev($message), 2));
+
+                $arguments[0] = $this->translateDateString($arguments[0], $locale);
+                if (in_array($delimiter, Config::get('constants.reminder_delimiters.date'))) {
+                    $remindDate = Carbon::parseFromLocale($arguments[0], $locale);
+                } else {
+                    $timeAmount = (int) preg_replace('/[^0-9]/', '', $arguments[0]);
+                    $timeUnit = preg_replace('/[^a-zA-Z]/', '', $arguments[0]);
+
+                    $remindDate = Carbon::now()->add($timeUnit, $timeAmount);
+                }
+
+                if ($remindDate && $remindDate instanceof Carbon) {
+                    return [
+                        'valid' => true,
+                        'text_to_remind' => $arguments[1],
+                        'remind_date' => $remindDate->format('Y-m-d H:i:s'),
+                    ];
+                }
             }
+        } catch (Exception $e) {
+            //Invalid message
         }
 
         return [
@@ -178,5 +185,27 @@ class ReminderService
             'text_to_remind' => '',
             'remind_date' => '',
         ];
+    }
+
+    /**
+     * Parse time text from other languages to
+     * English in order to provide a correct date.
+     * 
+     * Only for supported languages: Spanish
+     */
+    private function translateDateString(string $stringTime, string $locale)
+    {
+        $enWords = ['years', 'months', 'hours', 'minutes', 'seconds', 'year', 'month', 'hour', 'minute', 'second'];
+        $esWords = ['años', 'meses', 'horas', 'minutos', 'segundos', 'año', 'mes', 'hora', 'minuto', 'segundo'];
+        $removeDelimiters = [' de '];
+
+        if ($locale == 'es') {
+            // Replace spanish time words
+            $stringTime = str_replace($esWords, $enWords, $stringTime);
+            // Remove language delimiters
+            $stringTime = str_replace($removeDelimiters, '', $stringTime);
+        }
+
+        return $stringTime;
     }
 }

@@ -10,6 +10,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use WeStacks\TeleBot\Laravel\TeleBot;
+use Illuminate\Support\Facades\Crypt;
 
 class SendReminderProcess implements ShouldQueue
 {
@@ -46,7 +47,7 @@ class SendReminderProcess implements ShouldQueue
             'bot_messages.remind_send',
             [
                 'alias' => __("bot_messages.$reminderUser->alias", [], $reminderUser->locale),
-                'text_to_remind' => $this->reminder->text_to_remind,
+                'text_to_remind' => Crypt::decryptString($this->reminder->text_to_remind),
             ],
             $reminderUser->locale
         );
