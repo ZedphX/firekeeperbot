@@ -116,7 +116,7 @@ class ReminderService
      */
     public function sendReminders(int $limit)
     {
-        $toBeSend = Reminder::whereDate('remind_date', '<=', Carbon::now())->limit($limit)->get();
+        $toBeSend = Reminder::where('remind_date', '<=', Carbon::now())->limit($limit)->get();
         foreach ($toBeSend as $reminder) {
             SendReminderProcess::dispatch($reminder);
         }
@@ -195,8 +195,8 @@ class ReminderService
      */
     private function translateDateString(string $stringTime, string $locale)
     {
-        $enWords = ['years', 'months', 'hours', 'minutes', 'seconds', 'year', 'month', 'hour', 'minute', 'second'];
-        $esWords = ['años', 'meses', 'horas', 'minutos', 'segundos', 'año', 'mes', 'hora', 'minuto', 'segundo'];
+        $enWords = ['years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds', 'year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
+        $esWords = ['años', 'meses', 'semanas', 'dias', 'horas', 'minutos', 'segundos', 'año', 'mes', 'semana', 'dia', 'hora', 'minuto', 'segundo'];
         $removeDelimiters = [' de '];
 
         if ($locale == 'es') {
