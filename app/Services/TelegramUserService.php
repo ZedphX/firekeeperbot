@@ -4,6 +4,7 @@ namespace FireKeeper\Services;
 
 use FireKeeper\Models\TelegramUser;
 use WeStacks\TeleBot\Objects\Update;
+use Illuminate\Support\Facades\Config;
 
 class TelegramUserService
 {
