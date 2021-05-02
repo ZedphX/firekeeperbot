@@ -10,7 +10,7 @@ use WeStacks\TeleBot\Objects\Keyboard;
 
 class ChangeAliasCommand extends CommandHandler
 {
-    protected static $aliases = ['/change_alias', '/cambiar_alias', '/c_alias'];
+    protected static $aliases = ['/alias'];
     protected static $description = 'Change the way the Fire Keeper calls you.';
 
     public function handle()

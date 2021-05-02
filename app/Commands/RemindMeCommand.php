@@ -8,7 +8,7 @@ use FireKeeper\Http\Controllers\TelegramUserController;
 
 class RemindMeCommand extends CommandHandler
 {
-    protected static $aliases = ['/remindme', '/recuerdame', '/r'];
+    protected static $aliases = ['/remindme', '/recuerdame'];
     protected static $description = 'Ask the Fire Keeper to remind you something.';
 
     public function handle()
